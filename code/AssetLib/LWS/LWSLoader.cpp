@@ -3,7 +3,7 @@
 Open Asset Import Library (assimp)
 ---------------------------------------------------------------------------
 
-Copyright (c) 2006-2021, assimp team
+Copyright (c) 2006-2022, assimp team
 
 All rights reserved.
 
@@ -147,20 +147,12 @@ LWSImporter::~LWSImporter() {
 
 // ------------------------------------------------------------------------------------------------
 // Returns whether the class can handle the format of the given file.
-bool LWSImporter::CanRead(const std::string &pFile, IOSystem *pIOHandler, bool checkSig) const {
-    const std::string extension = GetExtension(pFile);
-    if (extension == "lws" || extension == "mot") {
-        return true;
-    }
-
-    // if check for extension is not enough, check for the magic tokens LWSC and LWMO
-    if (!extension.length() || checkSig) {
-        uint32_t tokens[2];
-        tokens[0] = AI_MAKE_MAGIC("LWSC");
-        tokens[1] = AI_MAKE_MAGIC("LWMO");
-        return CheckMagicToken(pIOHandler, pFile, tokens, 2);
-    }
-    return false;
+bool LWSImporter::CanRead(const std::string &pFile, IOSystem *pIOHandler, bool /*checkSig*/) const {
+    static const uint32_t tokens[] = {
+        AI_MAKE_MAGIC("LWSC"),
+        AI_MAKE_MAGIC("LWMO")
+    };
+    return CheckMagicToken(pIOHandler, pFile, tokens, AI_COUNT_OF(tokens));
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -321,6 +313,9 @@ void LWSImporter::SetupNodeName(aiNode *nd, LWS::NodeDesc &src) {
             std::string::size_type t = src.path.substr(s).find_last_of('.');
 
             nd->mName.length = ::ai_snprintf(nd->mName.data, MAXLEN, "%s_(%08X)", src.path.substr(s).substr(0, t).c_str(), combined);
+            if (nd->mName.length > MAXLEN) {
+                nd->mName.length = MAXLEN;
+            }
             return;
         }
     }
@@ -521,7 +516,7 @@ void LWSImporter::InternReadFile(const std::string &pFile, aiScene *pScene, IOSy
     std::list<LWS::NodeDesc> nodes;
 
     unsigned int cur_light = 0, cur_camera = 0, cur_object = 0;
-    unsigned int num_light = 0, num_camera = 0, num_object = 0;
+    unsigned int num_light = 0, num_camera = 0;
 
     // check magic identifier, 'LWSC'
     bool motion_file = false;
@@ -537,6 +532,11 @@ void LWSImporter::InternReadFile(const std::string &pFile, aiScene *pScene, IOSy
 
     // get file format version and print to log
     ++it;
+
+    if (it == root.children.end() || (*it).tokens[0].empty()) {
+        ASSIMP_LOG_ERROR("Invalid LWS file detectedm abort import.");
+        return;
+    }
     unsigned int version = strtoul10((*it).tokens[0].c_str());
     ASSIMP_LOG_INFO("LWS file format version is ", (*it).tokens[0]);
     first = 0.;
@@ -586,7 +586,6 @@ void LWSImporter::InternReadFile(const std::string &pFile, aiScene *pScene, IOSy
             d.id = batch.AddLoadRequest(path, 0, &props);
 
             nodes.push_back(d);
-            ++num_object;
         } else if ((*it).tokens[0] == "LoadObject") { // 'LoadObject': load a LWO file into the scene-graph
 
             // add node to list
@@ -604,7 +603,6 @@ void LWSImporter::InternReadFile(const std::string &pFile, aiScene *pScene, IOSy
 
             d.path = path;
             nodes.push_back(d);
-            ++num_object;
         } else if ((*it).tokens[0] == "AddNullObject") { // 'AddNullObject': add a dummy node to the hierarchy
 
             // add node to list
@@ -618,8 +616,6 @@ void LWSImporter::InternReadFile(const std::string &pFile, aiScene *pScene, IOSy
             }
             d.name = c;
             nodes.push_back(d);
-
-            num_object++;
         }
         // 'NumChannels': Number of envelope channels assigned to last layer
         else if ((*it).tokens[0] == "NumChannels") {

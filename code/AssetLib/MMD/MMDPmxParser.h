@@ -2,7 +2,7 @@
 Open Asset Import Library (assimp)
 ----------------------------------------------------------------------
 
-Copyright (c) 2006-2021, assimp team
+Copyright (c) 2006-2022, assimp team
 
 
 All rights reserved.
@@ -357,6 +357,8 @@ namespace pmx
 	{
 	public:
 		void virtual Read(std::istream *stream, PmxSetting *setting) = 0;
+
+        virtual ~PmxMorphOffset() = default;
 	};
 
 	class PmxMorphVertexOffset : public PmxMorphOffset

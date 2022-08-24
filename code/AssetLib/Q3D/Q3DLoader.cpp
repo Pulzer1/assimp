@@ -3,7 +3,7 @@
 Open Asset Import Library (assimp)
 ---------------------------------------------------------------------------
 
-Copyright (c) 2006-2021, assimp team
+Copyright (c) 2006-2022, assimp team
 
 All rights reserved.
 
@@ -84,18 +84,9 @@ Q3DImporter::~Q3DImporter() {
 
 // ------------------------------------------------------------------------------------------------
 // Returns whether the class can handle the format of the given file.
-bool Q3DImporter::CanRead(const std::string &pFile, IOSystem *pIOHandler, bool checkSig) const {
-    const std::string extension = GetExtension(pFile);
-
-    if (extension == "q3s" || extension == "q3o")
-        return true;
-    else if (!extension.length() || checkSig) {
-        if (!pIOHandler)
-            return true;
-        static const char * const tokens[] = { "quick3Do", "quick3Ds" };
-        return SearchFileHeaderForToken(pIOHandler, pFile, tokens, 2);
-    }
-    return false;
+bool Q3DImporter::CanRead(const std::string &pFile, IOSystem *pIOHandler, bool /*checkSig*/) const {
+    static const char *tokens[] = { "quick3Do", "quick3Ds" };
+    return SearchFileHeaderForToken(pIOHandler, pFile, tokens, AI_COUNT_OF(tokens));
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -138,10 +129,20 @@ void Q3DImporter::InternReadFile(const std::string &pFile,
     unsigned int numTextures = (unsigned int)stream.GetI4();
 
     std::vector<Material> materials;
-    materials.reserve(numMats);
+    try {
+        materials.reserve(numMats);
+    } catch(const std::bad_alloc&) {
+        ASSIMP_LOG_ERROR("Invalid alloc for materials.");
+        throw DeadlyImportError("Invalid Quick3D-file, material allocation failed.");
+    }
 
     std::vector<Mesh> meshes;
-    meshes.reserve(numMeshes);
+    try {
+        meshes.reserve(numMeshes);
+    } catch(const std::bad_alloc&) {
+        ASSIMP_LOG_ERROR("Invalid alloc for meshes.");
+        throw DeadlyImportError("Invalid Quick3D-file, mesh allocation failed.");
+    }
 
     // Allocate the scene root node
     pScene->mRootNode = new aiNode();

@@ -2,7 +2,7 @@
 Open Asset Import Library (assimp)
 ----------------------------------------------------------------------
 
-Copyright (c) 2006-2021, assimp team
+Copyright (c) 2006-2022, assimp team
 
 
 All rights reserved.
@@ -65,6 +65,7 @@ public:
 protected:
     const aiImporterDesc *GetInfo() const override;
     void InternReadFile(const std::string &pFile, aiScene *pScene, IOSystem *pIOHandler) override;
+    virtual void SetupProperties(const Importer *pImp) override;
 
 private:
     void ImportEmbeddedTextures(glTF2::Asset &a);
@@ -78,8 +79,11 @@ private:
 
 private:
     std::vector<unsigned int> meshOffsets;
-    std::vector<int> embeddedTexIdxs;
+    std::vector<int> mEmbeddedTexIdxs;
     aiScene *mScene;
+
+    /// An instance of rapidjson::IRemoteSchemaDocumentProvider
+    void *mSchemaDocumentProvider = nullptr;
 };
 
 } // namespace Assimp

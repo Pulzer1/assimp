@@ -3,7 +3,7 @@
 Open Asset Import Library (assimp)
 ---------------------------------------------------------------------------
 
-Copyright (c) 2006-2021, assimp team
+Copyright (c) 2006-2022, assimp team
 
 All rights reserved.
 
@@ -95,19 +95,9 @@ ASEImporter::~ASEImporter() {
 
 // ------------------------------------------------------------------------------------------------
 // Returns whether the class can handle the format of the given file.
-bool ASEImporter::CanRead(const std::string &pFile, IOSystem *pIOHandler, bool cs) const {
-    // check file extension
-    const std::string extension = GetExtension(pFile);
-
-    if (extension == "ase" || extension == "ask") {
-        return true;
-    }
-
-    if ((!extension.length() || cs) && pIOHandler) {
-        static const char * const tokens[] = { "*3dsmax_asciiexport" };
-        return SearchFileHeaderForToken(pIOHandler, pFile, tokens, 1);
-    }
-    return false;
+bool ASEImporter::CanRead(const std::string &pFile, IOSystem *pIOHandler, bool /*checkSig*/) const {
+    static const char *tokens[] = { "*3dsmax_asciiexport" };
+    return SearchFileHeaderForToken(pIOHandler, pFile, tokens, AI_COUNT_OF(tokens));
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -880,6 +870,7 @@ void ASEImporter::ConvertMaterial(ASE::Material &mat) {
         unsigned int iWire = 1;
         mat.pcInstance->AddProperty<int>((int *)&iWire, 1, AI_MATKEY_ENABLE_WIREFRAME);
     }
+    // fallthrough
     case D3DS::Discreet3DS::Gouraud:
         eShading = aiShadingMode_Gouraud;
         break;

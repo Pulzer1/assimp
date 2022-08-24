@@ -3,7 +3,7 @@
 Open Asset Import Library (assimp)
 ---------------------------------------------------------------------------
 
-Copyright (c) 2006-2021, assimp team
+Copyright (c) 2006-2022, assimp team
 
 All rights reserved.
 
@@ -202,6 +202,9 @@ corresponding preprocessor flag to selectively disable formats.
 #ifndef ASSIMP_BUILD_NO_M3D_IMPORTER
 #include "AssetLib/M3D/M3DImporter.h"
 #endif
+#ifndef ASSIMP_BUILD_NO_IQM_IMPORTER
+#include "AssetLib/IQM/IQMImporter.h"
+#endif
 
 namespace Assimp {
 
@@ -366,12 +369,13 @@ void GetImporterInstanceList(std::vector<BaseImporter *> &out) {
     out.push_back(new D3MFImporter());
 #endif
 #ifndef ASSIMP_BUILD_NO_X3D_IMPORTER
-    if (devImportersEnabled) { // https://github.com/assimp/assimp/issues/3647
-        out.push_back(new X3DImporter());
-    }
+    out.push_back(new X3DImporter());
 #endif
 #ifndef ASSIMP_BUILD_NO_MMD_IMPORTER
     out.push_back(new MMDImporter());
+#endif
+#ifndef ASSIMP_BUILD_NO_IQM_IMPORTER
+    out.push_back(new IQMImporter());
 #endif
     //#ifndef ASSIMP_BUILD_NO_STEP_IMPORTER
     //    out.push_back(new StepFile::StepFileImporter());

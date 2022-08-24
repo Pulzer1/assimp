@@ -2,7 +2,7 @@
 Open Asset Import Library (assimp)
 ----------------------------------------------------------------------
 
-Copyright (c) 2006-2021, assimp team
+Copyright (c) 2006-2022, assimp team
 
 
 All rights reserved.
@@ -365,7 +365,7 @@ static void WriteDump(const char *pFile, const char *cmd, const aiScene *scene, 
 
                 ioprintf(io, "\t\t\t<MatProperty key=\"%s\" \n\t\t\ttype=\"%s\" tex_usage=\"%s\" tex_index=\"%u\"",
                         prop->mKey.data, sz,
-                        ::TextureTypeToString((aiTextureType)prop->mSemantic), prop->mIndex);
+                        ::aiTextureTypeToString((aiTextureType)prop->mSemantic), prop->mIndex);
 
                 if (prop->mType == aiPTI_Float) {
                     ioprintf(io, " size=\"%i\">\n\t\t\t\t",
@@ -601,7 +601,7 @@ static void WriteDump(const char *pFile, const char *cmd, const aiScene *scene, 
                 ioprintf(io, "\t\t<TextureCoords num=\"%u\" set=\"%u\" name=\"%s\" num_components=\"%u\"> \n",
                          mesh->mNumVertices,
                          a,
-                         mesh->mTextureCoordsNames[a].C_Str(),
+                         (mesh->HasTextureCoordsName(a) ? mesh->GetTextureCoordsName(a)->C_Str() : ""),
                          mesh->mNumUVComponents[a]);
 
                 if (!shortened) {
