@@ -6,6 +6,9 @@ on:
   pull_request:
     branches: [ master ]
 
+permissions:
+  contents: read # to fetch code (actions/checkout)
+
 jobs:
   job1:
     name: adress-sanitizer
@@ -53,4 +56,14 @@ jobs:
     
     - name: test
       run: cd build/bin && ./unit
+      shell: bash
+
+  job3:
+    name: printf-sanitizer
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: run scan_printf script
+      run: ./scripts/scan_printf.sh
       shell: bash

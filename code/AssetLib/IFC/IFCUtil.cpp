@@ -48,6 +48,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "AssetLib/IFC/IFCUtil.h"
 #include "Common/PolyTools.h"
+#include "Geometry/GeometryUtils.h"
 #include "PostProcessing/ProcessHelper.h"
 
 namespace Assimp {
@@ -201,7 +202,7 @@ void TempMesh::ComputePolygonNormals(std::vector<IfcVector3>& normals,
     size_t vidx = std::accumulate(mVertcnt.begin(),begin,0);
     for(iit = begin; iit != end; vidx += *iit++) {
         if (!*iit) {
-            normals.push_back(IfcVector3());
+            normals.emplace_back();
             continue;
         }
         for(size_t vofs = 0, cnt = 0; vofs < *iit; ++vofs) {
@@ -215,7 +216,7 @@ void TempMesh::ComputePolygonNormals(std::vector<IfcVector3>& normals,
             ++cnt;
         }
 
-        normals.push_back(IfcVector3());
+        normals.emplace_back();
         NewellNormal<4,4,4>(normals.back(),*iit,&temp[0],&temp[1],&temp[2]);
     }
 
@@ -235,7 +236,7 @@ IfcVector3 TempMesh::ComputeLastPolygonNormal(bool normalize) const {
 struct CompareVector {
     bool operator () (const IfcVector3& a, const IfcVector3& b) const {
         IfcVector3 d = a - b;
-        IfcFloat eps = ai_epsilon;
+        constexpr IfcFloat eps = ai_epsilon;
         return d.x < -eps || (std::abs(d.x) < eps && d.y < -eps) || (std::abs(d.x) < eps && std::abs(d.y) < eps && d.z < -eps);
     }
 };

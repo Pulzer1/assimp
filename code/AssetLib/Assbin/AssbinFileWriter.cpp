@@ -291,15 +291,15 @@ public:
     size_t Read(void * /*pvBuffer*/, size_t /*pSize*/, size_t /*pCount*/) override {
         return 0;
     }
-    
+
     aiReturn Seek(size_t /*pOffset*/, aiOrigin /*pOrigin*/) override {
         return aiReturn_FAILURE;
     }
-    
+
     size_t Tell() const override {
         return cursor;
     }
-    
+
     void Flush() override {
         // not implemented
     }
@@ -641,6 +641,10 @@ protected:
 
         Write<aiString>(&chunk, l->mName);
         Write<unsigned int>(&chunk, l->mType);
+
+        Write<aiVector3D>(&chunk, l->mPosition);
+        Write<aiVector3D>(&chunk, l->mDirection);
+        Write<aiVector3D>(&chunk, l->mUp);
 
         if (l->mType != aiLightSource_DIRECTIONAL) {
             Write<float>(&chunk, l->mAttenuationConstant);

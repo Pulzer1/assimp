@@ -80,13 +80,11 @@ static const aiImporterDesc desc = {
 };
 
 glTFImporter::glTFImporter() :
-        BaseImporter(), meshOffsets(), embeddedTexIdxs(), mScene(nullptr) {
+        mScene(nullptr) {
     // empty
 }
 
-glTFImporter::~glTFImporter() {
-    // empty
-}
+glTFImporter::~glTFImporter() = default;
 
 const aiImporterDesc *glTFImporter::GetInfo() const {
     return &desc;
@@ -285,7 +283,7 @@ void glTFImporter::ImportMeshes(glTF::Asset &r) {
                 }
             }
 
-            aiFace *faces = 0;
+            aiFace *faces = nullptr;
             unsigned int nFaces = 0;
 
             if (prim.indices) {

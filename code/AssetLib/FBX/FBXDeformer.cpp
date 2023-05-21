@@ -66,11 +66,7 @@ Deformer::Deformer(uint64_t id, const Element& element, const Document& doc, con
 }
 
 // ------------------------------------------------------------------------------------------------
-Deformer::~Deformer()
-{
-
-}
-
+Deformer::~Deformer() = default;
 
 // ------------------------------------------------------------------------------------------------
 Cluster::Cluster(uint64_t id, const Element& element, const Document& doc, const std::string& name)
@@ -119,11 +115,7 @@ Cluster::Cluster(uint64_t id, const Element& element, const Document& doc, const
 
 
 // ------------------------------------------------------------------------------------------------
-Cluster::~Cluster()
-{
-
-}
-
+Cluster::~Cluster() = default;
 
 // ------------------------------------------------------------------------------------------------
 Skin::Skin(uint64_t id, const Element& element, const Document& doc, const std::string& name)
@@ -152,10 +144,7 @@ Skin::Skin(uint64_t id, const Element& element, const Document& doc, const std::
 
 
 // ------------------------------------------------------------------------------------------------
-Skin::~Skin()
-{
-
-}
+Skin::~Skin() = default;
 // ------------------------------------------------------------------------------------------------
 BlendShape::BlendShape(uint64_t id, const Element& element, const Document& doc, const std::string& name)
     : Deformer(id, element, doc, name)
@@ -165,16 +154,15 @@ BlendShape::BlendShape(uint64_t id, const Element& element, const Document& doc,
     for (const Connection* con : conns) {
         const BlendShapeChannel* const bspc = ProcessSimpleConnection<BlendShapeChannel>(*con, false, "BlendShapeChannel -> BlendShape", element);
         if (bspc) {
-            blendShapeChannels.push_back(bspc);
-            continue;
+            auto pr = blendShapeChannels.insert(bspc);
+            if (!pr.second) {
+                FBXImporter::LogWarn("there is the same blendShapeChannel id ", bspc->ID());
+            }
         }
     }
 }
 // ------------------------------------------------------------------------------------------------
-BlendShape::~BlendShape()
-{
-
-}
+BlendShape::~BlendShape() = default;
 // ------------------------------------------------------------------------------------------------
 BlendShapeChannel::BlendShapeChannel(uint64_t id, const Element& element, const Document& doc, const std::string& name)
     : Deformer(id, element, doc, name)
@@ -193,16 +181,15 @@ BlendShapeChannel::BlendShapeChannel(uint64_t id, const Element& element, const 
     for (const Connection* con : conns) {
         const ShapeGeometry* const sg = ProcessSimpleConnection<ShapeGeometry>(*con, false, "Shape -> BlendShapeChannel", element);
         if (sg) {
-            shapeGeometries.push_back(sg);
-            continue;
+            auto pr = shapeGeometries.insert(sg);
+            if (!pr.second) {
+                FBXImporter::LogWarn("there is the same shapeGeometrie id ", sg->ID());
+            }
         }
     }
 }
 // ------------------------------------------------------------------------------------------------
-BlendShapeChannel::~BlendShapeChannel()
-{
-
-}
+BlendShapeChannel::~BlendShapeChannel() = default;
 // ------------------------------------------------------------------------------------------------
 }
 }

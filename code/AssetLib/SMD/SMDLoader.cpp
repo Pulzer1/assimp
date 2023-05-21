@@ -83,21 +83,18 @@ static const aiImporterDesc desc = {
 // Constructor to be privately used by Importer
 SMDImporter::SMDImporter() :
         configFrameID(), 
-        mBuffer(), 
         pScene( nullptr ), 
         iFileSize( 0 ), 
         iSmallestFrame( INT_MAX ),
         dLengthOfAnim( 0.0 ),
-        bHasUVs(false ), 
+        bHasUVs(false ),
         iLineNumber((unsigned int)-1)  {
     // empty
 }
 
 // ------------------------------------------------------------------------------------------------
 // Destructor, private as well
-SMDImporter::~SMDImporter() {
-    // empty
-}
+SMDImporter::~SMDImporter() = default;
 
 // ------------------------------------------------------------------------------------------------
 // Returns whether the class can handle the format of the given file.
@@ -221,7 +218,7 @@ void SMDImporter::FixTimeValues() {
 // create output meshes
 void SMDImporter::CreateOutputMeshes() {
     if (aszTextures.empty()) {
-        aszTextures.push_back(std::string());
+        aszTextures.emplace_back();
     }
 
     // we need to sort all faces by their material index
@@ -322,7 +319,7 @@ void SMDImporter::CreateOutputMeshes() {
                             "to the vertex' parent node");
                         continue;
                     }
-                    aaiBones[pairval.first].push_back(TempWeightListEntry(iNum,pairval.second));
+                    aaiBones[pairval.first].emplace_back(iNum,pairval.second);
                     fSum += pairval.second;
                 }
                 // ******************************************************************
@@ -350,8 +347,7 @@ void SMDImporter::CreateOutputMeshes() {
                             }
                         }
                     } else {
-                        aaiBones[face.avVertices[iVert].iParentNode].push_back(
-                            TempWeightListEntry(iNum,1.0f-fSum));
+                        aaiBones[face.avVertices[iVert].iParentNode].emplace_back(iNum,1.0f-fSum);
                     }
                 }
                 pcMesh->mFaces[iFace].mIndices[iVert] = iNum++;
@@ -538,7 +534,7 @@ void SMDImporter::GetAnimationFileList(const std::string &pFile, IOSystem* pIOHa
     auto path = base + "/" + name + "_animation.txt";
 
     std::unique_ptr<IOStream> file(pIOHandler->Open(path.c_str(), "rb"));
-    if (file.get() == nullptr) {
+    if (file == nullptr) {
         return;
     }
 
@@ -574,7 +570,7 @@ void SMDImporter::GetAnimationFileList(const std::string &pFile, IOSystem* pIOHa
                 animPath = p;
                 animName = DefaultIOSystem::completeBaseName(animPath);
             }
-            outList.push_back(std::make_tuple(animName, base + "/" + animPath));
+            outList.emplace_back(animName, base + "/" + animPath);
         }
         tok1 = strtok_s(nullptr, "\r\n", &context1);
     }
@@ -594,7 +590,7 @@ void SMDImporter::CreateOutputMaterials() {
         pScene->mMaterials[iMat] = pcMat;
 
         aiString szName;
-        szName.length = (size_t)ai_snprintf(szName.data,MAXLEN,"Texture_%u",iMat);
+        szName.length = static_cast<ai_uint32>(ai_snprintf(szName.data,MAXLEN,"Texture_%u",iMat));
         pcMat->AddProperty(&szName,AI_MATKEY_NAME);
 
         if (aszTextures[iMat].length())
@@ -678,7 +674,7 @@ void SMDImporter::ReadSmd(const std::string &pFile, IOSystem* pIOHandler) {
     std::unique_ptr<IOStream> file(pIOHandler->Open(pFile, "rb"));
 
     // Check whether we can read from the file
-    if (file.get() == nullptr) {
+    if (file == nullptr) {
         throw DeadlyImportError("Failed to open SMD/VTA file ", pFile, ".");
     }
 
@@ -784,7 +780,7 @@ void SMDImporter::ParseVASection(const char* szCurrent, const char** szCurrentOu
             SkipLine(szCurrent,&szCurrent);
         } else {
             if(0 == iCurIndex) {
-                asTriangles.push_back(SMD::Face());
+                asTriangles.emplace_back();
             }
             if (++iCurIndex == 3) {
                 iCurIndex = 0;
@@ -904,7 +900,7 @@ void SMDImporter::ParseSkeletonElement(const char* szCurrent, const char** szCur
     }
     SMD::Bone& bone = asBones[iBone];
 
-    bone.sAnim.asKeys.push_back(SMD::Bone::Animation::MatrixKey());
+    bone.sAnim.asKeys.emplace_back();
     SMD::Bone::Animation::MatrixKey& key = bone.sAnim.asKeys.back();
 
     key.dTime = (double)iTime;
@@ -949,7 +945,7 @@ void SMDImporter::ParseSkeletonElement(const char* szCurrent, const char** szCur
 // ------------------------------------------------------------------------------------------------
 // Parse a triangle
 void SMDImporter::ParseTriangle(const char* szCurrent, const char** szCurrentOut) {
-    asTriangles.push_back(SMD::Face());
+    asTriangles.emplace_back();
     SMD::Face& face = asTriangles.back();
 
     if(!SkipSpaces(szCurrent,&szCurrent)) {
